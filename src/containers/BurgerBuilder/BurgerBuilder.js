@@ -23,16 +23,32 @@ class BurgerBuilder extends Component {
     //     this.state = {...}
     // }
     state = {
-        ingredients: {
-            lettuce: 0,
-            bacon: 0,
-            cheese: 0,
-            meat: 0
-        },
+        ingredients: null,
         totalPrice: 0.5,
         purchasable: false,
         purchasing: false,
-        loading: false
+        loading: false,
+        error: false
+    }
+
+    componentDidMount(){
+        axios.get('https://react-build-a-burger-60ef4.firebaseio.com/ingredients.json')
+            .then(response =>{
+                const ingredients = response.data;
+                const oldPrice = this.state.totalPrice;
+                let priceAddition = INGREDIENT_PRICES.lettuce * ingredients.lettuce;
+                let newPrice;
+                priceAddition = INGREDIENT_PRICES.meat * ingredients.meat;
+                newPrice = oldPrice + priceAddition;
+                priceAddition = INGREDIENT_PRICES.bacon * ingredients.bacon;
+                newPrice +=priceAddition;
+                priceAddition = INGREDIENT_PRICES.cheese * ingredients.cheese;
+                newPrice +=priceAddition;
+                this.setState({ingredients: ingredients, totalPrice: newPrice});
+            })
+            .catch(error =>{
+                this.setState({error:true});
+            });
     }
 
     updatePurchaseState (ingredients) {
@@ -104,6 +120,7 @@ class BurgerBuilder extends Component {
             orderType: 'delivery',
             destination: '123 Test St. Jacksonville FL, 32222'
         }
+
         axios.post('/orders.json', order)
         // must add .json for firebase database
             .then(response => {
@@ -124,15 +141,34 @@ class BurgerBuilder extends Component {
             disabledInfo[key] = disabledInfo[key] <= 0
         }
 
-        let orderSummary = <OrderSummary 
-        ingredients={this.state.ingredients}
-        price={this.state.totalPrice}
-        purchaseCancelled={this.purchaseCancelHandler}
-        purchaseContinued={this.purchaseContinueHandler} />
+        let orderSummary = null;
 
         if(this.state.loading){
             orderSummary = <Spinner/>
         }
+
+        let burger = this.state.error? <p>The Application Isn't Connecting to DataBase!</p> :<React.Fragment><br/><br/><br/><Spinner/></React.Fragment>;
+
+        if(this.state.ingredients){
+            burger = (
+                <React.Fragment>
+                    <Burger ingredients={this.state.ingredients} />
+                    <BuildControls
+                        ingredientAdded={this.addIngredientHandler}
+                        ingredientRemoved={this.removeIngredientHandler}
+                        disabled={disabledInfo}
+                        purchasable={this.state.purchasable}
+                        ordered={this.purchaseHandler}
+                        price={this.state.totalPrice} />
+                </React.Fragment>);
+
+            orderSummary = <OrderSummary 
+                ingredients={this.state.ingredients}
+                price={this.state.totalPrice}
+                purchaseCancelled={this.purchaseCancelHandler}
+                purchaseContinued={this.purchaseContinueHandler} />
+        }
+
 
         // {salad: true, meat: false, ...}
         return (
@@ -140,14 +176,7 @@ class BurgerBuilder extends Component {
                 <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
                     {orderSummary}
                 </Modal>
-                <Burger ingredients={this.state.ingredients} />
-                <BuildControls
-                    ingredientAdded={this.addIngredientHandler}
-                    ingredientRemoved={this.removeIngredientHandler}
-                    disabled={disabledInfo}
-                    purchasable={this.state.purchasable}
-                    ordered={this.purchaseHandler}
-                    price={this.state.totalPrice} />
+                {burger}
             </React.Fragment>
         );
     }
