@@ -34,7 +34,13 @@ class BurgerBuilder extends Component {
     componentDidMount(){
         axios.get('https://react-build-a-burger-60ef4.firebaseio.com/ingredients.json')
             .then(response =>{
-                const ingredients = response.data;
+                const data = response.data;
+                const ingredients = {
+                    lettuce: data.lettuce,
+                    bacon: data.bacon,
+                    cheese: data.cheese,
+                    meat: data.meat,
+                };
                 const oldPrice = this.state.totalPrice;
                 let priceAddition = INGREDIENT_PRICES.lettuce * ingredients.lettuce;
                 let newPrice;
