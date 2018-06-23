@@ -11,7 +11,7 @@ import axios from '../../axios-orders';
 
 
 const INGREDIENT_PRICES = {
-    salad: 0.2,
+    lettuce: 0.2,
     cheese: 0.3,
     meat: 1.0,
     bacon: 0.3
@@ -24,7 +24,7 @@ class BurgerBuilder extends Component {
     // }
     state = {
         ingredients: {
-            salad: 0,
+            lettuce: 0,
             bacon: 0,
             cheese: 0,
             meat: 0
