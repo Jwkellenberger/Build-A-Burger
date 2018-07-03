@@ -5,3 +5,5 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ### The outfacing appearance of the app
 ![Burger App](https://i.imgur.com/QP4EuOF.png)
 
+### Routing
+Use of react-router-dom to route pages within the single page application
